@@ -36,6 +36,7 @@ public class PlayScreen implements Screen {
     private int screenHeight;
     private List<String> messages;
     private List<String> oldMessages;
+    private boolean isboss;
 
     public PlayScreen() {
         this.screenWidth = 80;
@@ -43,6 +44,7 @@ public class PlayScreen implements Screen {
         createWorld();
         this.messages = new ArrayList<String>();
         this.oldMessages = new ArrayList<String>();
+        this.isboss = false;
 
         CreatureFactory creatureFactory = new CreatureFactory(this.world);
         createCreatures(creatureFactory);
@@ -51,9 +53,10 @@ public class PlayScreen implements Screen {
     private void createCreatures(CreatureFactory creatureFactory) {
         this.player = creatureFactory.newPlayer(this.messages);
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 4; i++) {
             creatureFactory.newFungus();
         }
+
     }
 
     private void createWorld() {
@@ -104,7 +107,9 @@ public class PlayScreen implements Screen {
         terminal.write(player.glyph(), player.x() - getScrollX(), player.y() - getScrollY(), player.color());
         // Stats
         String stats = String.format("%3d/%3d hp", player.hp(), player.maxHP());
-        terminal.write(stats, 1, 23);
+        String killnumber = String.format("You have killed %3d fungus", player.killnum());
+        terminal.write(stats, 1, 21);
+        terminal.write(killnumber);
         // Messages
         displayMessages(terminal, this.messages);
     }
@@ -112,18 +117,23 @@ public class PlayScreen implements Screen {
     @Override
     public Screen respondToUserInput(KeyEvent key) {
         switch (key.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
-                player.moveBy(-1, 0);
-                break;
-            case KeyEvent.VK_RIGHT:
-                player.moveBy(1, 0);
-                break;
-            case KeyEvent.VK_UP:
-                player.moveBy(0, -1);
-                break;
-            case KeyEvent.VK_DOWN:
-                player.moveBy(0, 1);
-                break;
+        case KeyEvent.VK_LEFT:
+            player.moveBy(-1, 0);
+            break;
+        case KeyEvent.VK_RIGHT:
+            player.moveBy(1, 0);
+            break;
+        case KeyEvent.VK_UP:
+            player.moveBy(0, -1);
+            break;
+        case KeyEvent.VK_DOWN:
+            player.moveBy(0, 1);
+            break;
+        }
+        if (player.killnum() >= 4 && !isboss) {
+            isboss = true;
+            CreatureFactory creatureFactory = new CreatureFactory(this.world);
+            creatureFactory.newBoss(player);
         }
         return this;
     }

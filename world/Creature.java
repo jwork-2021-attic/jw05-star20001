@@ -125,10 +125,20 @@ public class Creature {
         }
     }
 
+    private int kills;
+
+    public int killnum() {
+        return this.kills;
+    }
+
     public void attack(Creature other) {
         int damage = Math.max(0, this.attackValue() - other.defenseValue());
         damage = (int) (Math.random() * damage) + 1;
 
+        if (other.hp() <= damage) {
+            this.kills++;
+        }
+        
         other.modifyHP(-damage);
 
         this.notify("You attack the '%s' for %d damage.", other.glyph, damage);
@@ -156,5 +166,6 @@ public class Creature {
         this.attackValue = attack;
         this.defenseValue = defense;
         this.visionRadius = visionRadius;
+        this.kills = 0;
     }
 }

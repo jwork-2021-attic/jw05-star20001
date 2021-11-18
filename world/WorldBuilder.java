@@ -43,12 +43,15 @@ public class WorldBuilder {
         for (int width = 0; width < this.width; width++) {
             for (int height = 0; height < this.height; height++) {
                 Random rand = new Random();
-                switch (rand.nextInt(World.TILE_TYPES)) {
+                switch (rand.nextInt(3)) {
                     case 0:
                         tiles[width][height] = Tile.FLOOR;
                         break;
                     case 1:
                         tiles[width][height] = Tile.WALL;
+                        break;
+                    case 2:
+                        tiles[width][height] = Tile.FLOOR;
                         break;
                 }
             }

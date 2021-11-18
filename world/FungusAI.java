@@ -24,7 +24,6 @@ package world;
 public class FungusAI extends CreatureAI {
 
     private CreatureFactory factory;
-    private int spreadcount = 0;
 
     public static int spores = 5;
     public static double spreadchance = 0.01;
@@ -35,22 +34,36 @@ public class FungusAI extends CreatureAI {
     }
 
     public void onUpdate() {
-        if (this.spreadcount < FungusAI.spores && Math.random() < FungusAI.spreadchance) {
-            spread();
-        }
+        movearound();
     }
 
-    private void spread() {
-        int newx = creature.x() + (int) (Math.random() * 11) - 5;
-        int newy = creature.y() + (int) (Math.random() * 11) - 5;
-
+    private void movearound() {
+        int direc = (int) (Math.random() * 3);
+        int newx = creature.x();
+        int newy = creature.y();
+        switch (direc) {
+        case 0:
+            newx += 1;
+            break;
+        case 1:
+            newx -= 1;
+            break;
+        case 2:
+            newy += 1;
+            break;
+        case 3:
+            newy -= 1;
+            break;
+        default:
+            break;
+        }
         if (!creature.canEnter(newx, newy)) {
             return;
         }
-
         Creature child = this.factory.newFungus();
         child.setX(newx);
         child.setY(newy);
-        spreadcount++;
+        int hp = creature.hp();
+        creature.modifyHP(-hp);
     }
 }
