@@ -116,12 +116,16 @@ public class Creature {
     }
 
     public void moveBy(int mx, int my) {
-        Creature other = world.creature(x + mx, y + my);
-
-        if (other == null) {
-            ai.onEnter(x + mx, y + my, world.tile(x + mx, y + my));
-        } else {
-            attack(other);
+        synchronized (this.world) {
+            if (!world.tile(x + mx, y + my).isGround()) {
+                return;
+            }
+            Creature other = world.creature(x + mx, y + my);
+            if (other == null) {
+                ai.onEnter(x + mx, y + my, world.tile(x + mx, y + my));
+            } else {
+                attack(other);
+            }
         }
     }
 
@@ -131,21 +135,29 @@ public class Creature {
         return this.kills;
     }
 
+    public CreatureAI getAI() {
+        return this.ai;
+    }
+
     public void attack(Creature other) {
-        int damage = Math.max(0, this.attackValue() - other.defenseValue());
-        damage = (int) (Math.random() * damage) + 1;
+        synchronized (other) {
+            int damage = Math.max(0, this.attackValue() - other.defenseValue());
+            damage = (int) (Math.random() * damage) + 1;
 
-        if (other.hp() <= damage) {
-            this.kills++;
+            if (other.hp() <= damage) {
+                this.kills++;
+            }
+
+            other.modifyHP(-damage);
+
+            this.notify("You attack the '%s' for %d damage.", other.glyph, damage);
+            other.notify("The '%s' attacks you for %d damage.", glyph, damage);
         }
-        
-        other.modifyHP(-damage);
-
-        this.notify("You attack the '%s' for %d damage.", other.glyph, damage);
-        other.notify("The '%s' attacks you for %d damage.", glyph, damage);
     }
 
     public void update() {
+        //if (this.ai == null)
+        //    return;
         this.ai.onUpdate();
     }
 

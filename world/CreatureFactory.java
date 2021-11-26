@@ -48,9 +48,17 @@ public class CreatureFactory {
     }
     
     public Creature newBoss(Creature player) {
-        Creature boss = new Creature(this.world, (char) 3, AsciiPanel.yellow, 50, 10, 0, 0);
+        Creature boss = new Creature(this.world, (char) 1, AsciiPanel.yellow, 50, 10, 0, 0);
         world.addAtEmptyLocation(boss);
         new BossAI(boss, player);
         return boss;
+    }
+
+    public Creature newMonster() {
+        Creature monster = new Creature(this.world, (char) 1, AsciiPanel.red, 1, 0, 0, 0);
+        world.addAtEmptyLocation(monster);
+        MonsterAI monsterAI = new MonsterAI(monster,this);
+        monster.setAI(monsterAI);
+        return monster;
     }
 }

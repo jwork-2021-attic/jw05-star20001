@@ -32,6 +32,7 @@ public class PlayScreen implements Screen {
 
     private World world;
     private Creature player;
+    private Creature boss;
     private int screenWidth;
     private int screenHeight;
     private List<String> messages;
@@ -39,8 +40,8 @@ public class PlayScreen implements Screen {
     private boolean isboss;
 
     public PlayScreen() {
-        this.screenWidth = 80;
-        this.screenHeight = 24;
+        this.screenWidth = 40;
+        this.screenHeight = 21;
         createWorld();
         this.messages = new ArrayList<String>();
         this.oldMessages = new ArrayList<String>();
@@ -50,17 +51,22 @@ public class PlayScreen implements Screen {
         createCreatures(creatureFactory);
     }
 
+    private  Creature[] creaturelist;
     private void createCreatures(CreatureFactory creatureFactory) {
         this.player = creatureFactory.newPlayer(this.messages);
 
+        creaturelist = new Creature[4];
         for (int i = 0; i < 4; i++) {
-            creatureFactory.newFungus();
+            creaturelist[i] = creatureFactory.newMonster();
+            Thread t = new Thread(creaturelist[i].getAI());
+            t.start();
         }
 
+        
     }
 
     private void createWorld() {
-        world = new WorldBuilder(90, 31).makeCaves().build();
+        world = new WorldBuilder(50, 30).makeCaves().build();
     }
 
     private void displayTiles(AsciiPanel terminal, int left, int top) {
@@ -100,7 +106,7 @@ public class PlayScreen implements Screen {
     }
 
     @Override
-    public void displayOutput(AsciiPanel terminal) {
+    public Screen displayOutput(AsciiPanel terminal) {
         // Terrain and creatures
         displayTiles(terminal, getScrollX(), getScrollY());
         // Player
@@ -108,10 +114,28 @@ public class PlayScreen implements Screen {
         // Stats
         String stats = String.format("%3d/%3d hp", player.hp(), player.maxHP());
         String killnumber = String.format("You have killed %3d fungus", player.killnum());
+        String warning = "Boss is coming!";
         terminal.write(stats, 1, 21);
-        terminal.write(killnumber);
+        if (!isboss) {
+            terminal.write(killnumber);
+        }
+        else {
+            terminal.write(warning);
+        }
         // Messages
         displayMessages(terminal, this.messages);
+
+        if (player.hp() <= 0) {
+            return new LoseScreen();
+        }
+
+        if (isboss)
+        {
+            if (boss.hp() <= 0) {
+                return new WinScreen();
+            }
+        }
+        return this;
     }
 
     @Override
@@ -130,12 +154,19 @@ public class PlayScreen implements Screen {
             player.moveBy(0, 1);
             break;
         }
+
         if (player.killnum() >= 4 && !isboss) {
             isboss = true;
-            CreatureFactory creatureFactory = new CreatureFactory(this.world);
-            creatureFactory.newBoss(player);
+            createboss();
         }
         return this;
+    }
+
+    private void createboss() {
+        CreatureFactory creatureFactory = new CreatureFactory(this.world);
+        this.boss = creatureFactory.newBoss(player);
+        Thread t = new Thread(this.boss.getAI());
+        t.start();
     }
 
     public int getScrollX() {

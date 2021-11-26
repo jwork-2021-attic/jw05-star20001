@@ -48,7 +48,7 @@ public class ApplicationMain extends JFrame implements KeyListener {
     @Override
     public void repaint() {
         terminal.clear();
-        screen.displayOutput(terminal);
+        screen=screen.displayOutput(terminal);
         super.repaint();
     }
 
@@ -79,5 +79,19 @@ public class ApplicationMain extends JFrame implements KeyListener {
         ApplicationMain app = new ApplicationMain();
         app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         app.setVisible(true);
+
+        new Thread(
+                ()->{
+                        while (true){
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            app.repaint();
+                        }
+                }
+        ).start();
+        
     }
 }
