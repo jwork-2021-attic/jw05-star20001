@@ -16,8 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 package screen;
-
+import java.io.IOException;
 import asciiPanel.AsciiPanel;
+
 
 /**
  *
@@ -25,9 +26,36 @@ import asciiPanel.AsciiPanel;
  */
 public class WinScreen extends RestartScreen {
 
+    private long score;
+    private String result = "";
+
+    private int flag=0;
+
+    public WinScreen(long score) {
+        this.score = score;
+        if (this.result == "" && flag == 0) {
+            System.out.println("Get Result");
+            getresult();
+            flag = 1;
+            System.out.println("Got");
+        }
+    }
+
+    private void getresult() {
+        try {
+            Client client = new Client(score);
+            this.result = client.getResult();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
     @Override
     public Screen displayOutput(AsciiPanel terminal) {
-        terminal.write("You won! Press enter to go again.", 0, 0);
+        String message = String.format("You win! Your time-cost are %d", score);
+        terminal.write(message, 0, 0);
+        terminal.write(result, 0, 1);
         return this;
     }
 
